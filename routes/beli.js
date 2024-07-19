@@ -23,12 +23,12 @@ module.exports = function (db) {
     const sortMode = req.query.order[0].dir;
 
     const total = await db.query(
-      `select count(*) as total from merchant${
+      `select count(*) as total from costomer${
         params.length > 0 ? ` where ${params.join(" or ")}` : ""
       }`
     );
     const data = await db.query(
-      `select * from merchant${
+      `select * from costomer${
         params.length > 0 ? ` where ${params.join(" or ")}` : ""
       } order by ${sortBy} ${sortMode} limit ${limit} offset ${offset} `
     );
@@ -43,31 +43,11 @@ module.exports = function (db) {
 
   router.post("/add", async (req, res) => {
     try {
-      const { name, selling, ongkir, customer } = req.body;
-      let sampleFile;
-      let uploadPath;
+      const { nama_customer, nama_barang, harga_barang, ongkir } = req.body;
 
-      console.log(req.body);
-
-      if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).send("No files were uploaded.");
-      }
-
-      // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-      sampleFile = req.files.sampleFile;
-      const imagefiles = `${Date.now()}-${sampleFile.name}`;
-      uploadPath = path.join(
-        __dirname,
-        "..",
-        "public",
-        "images",
-        "upload",
-        imagefiles
-      );
-      sampleFile.mv(uploadPath);
       const { rows: data } = await db.query(
-        "INSERT INTO merchant (picture, nama, sellingprice, ongkir, customer) VALUES ($1, $2, $3, $4, $5)",
-        [imagefiles, name, selling, ongkir, customer]
+        "INSERT INTO costomer (id_costomer,nama_customer, nama_barang, harga_barang, ongkir) VALUES ($1, $2, $3, $4, $5)",
+        [id_costomer, nama_customer, nama_barang, harga_barang, ongkir]
       );
       res.redirect("/barang");
     } catch (err) {
@@ -78,42 +58,24 @@ module.exports = function (db) {
 
   router.get("/delete/:id", async (req, res) => {
     try {
-      const { id } = req.params;
-      // console.log(id, 'ini id')
-
-      const { rows: resut } = await db.query(
-        "SELECT * FROM merchant WHERE id = $1",
+      const { rows } = await db.query(
+        "DELETE FROM costomer WHERE id_costomer = $1",
         [id]
       );
-      const removeImg = resut[0].picture;
-      const removePath = path.join(
-        __dirname,
-        "..",
-        "public",
-        "images",
-        "upload",
-        removeImg
-      );
-      console.log(removePath);
-
-      fs.unlinkSync(removePath);
-      const { rows } = await db.query("DELETE FROM merchant WHERE id = $1", [
-        id,
-      ]);
       res.redirect("/barang");
     } catch (err) {
       res.send(err);
     }
   });
 
-  router.get("/edit/:id", async (req, res) => {
+  router.get("/edit/:id_costomer", async (req, res) => {
     try {
-      const { rows: resut } = await db.query("SELECT * FROM merchant");
-      const { id } = req.params;
+      const { rows: resut } = await db.query("SELECT * FROM costomer");
+      const { id_costomer } = req.params;
 
       const { rows: data } = await db.query(
-        "SELECT * FROM merchant WHERE id = $1",
-        [id]
+        "SELECT * FROM costomer WHERE id_costomer = $1",
+        [id_costomer]
       );
       res.render("edit", { item: data[0], units: resut });
     } catch (err) {
@@ -121,40 +83,16 @@ module.exports = function (db) {
     }
   });
 
-  router.post("/edit/:id", async (req, res) => {
+  router.post("/edit/:id_costomer", async (req, res) => {
     console.log("masuk edit");
     try {
-      const { id } = req.params;
-      const { nama, selling, ongkir, stock } = req.body;
-      console.log(req.body);
+      const { id_costomer } = req.params;
+      const { nama_customer, nama_barang, harga_barang, ongkir } = req.body;
 
-      let sampleFile;
-      let uploadPath;
-
-      if (!req.files || Object.keys(req.files).length === 0) {
-        await db.query(
-          "UPDATE merchant SET nama=$1, sellingprice=$2, ongkir=$3, customer=$4 WHERE id=$5",
-          [nama, selling, ongkir, customer, id]
-        );
-      } else {
-        // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-        sampleFile = req.files.sampleFile;
-        const imagefiles = `${Date.now()}-${sampleFile.name}`;
-        uploadPath = path.join(
-          __dirname,
-          "..",
-          "public",
-          "images",
-          "upload",
-          imagefiles
-        );
-        sampleFile.mv(uploadPath);
-
-        await db.query(
-          "UPDATE merchant SET picture=$1, nama=$2, sellingprice=$3, ongkir=$4, customer=$5 WHERE id=$6",
-          [imagefiles, nama, selling, ongkir, customer, id]
-        );
-      }
+      await db.query(
+        "UPDATE costomer SET nama=$1, sellingprice=$2, ongkir=$3, customer=$4 WHERE id_costomer=$5",
+        [nama_customer, nama_barang, harga_barang, ongkir, id_costomer]
+      );
       res.redirect("/barang");
     } catch (err) {
       res.send(err);
