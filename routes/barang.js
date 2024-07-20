@@ -43,7 +43,7 @@ module.exports = function (db) {
 
   router.post("/add", async (req, res) => {
     try {
-      const { name, selling, ongkir, customer } = req.body;
+      const { name, selling, ongkir } = req.body;
       let sampleFile;
       let uploadPath;
 
@@ -66,8 +66,8 @@ module.exports = function (db) {
       );
       sampleFile.mv(uploadPath);
       const { rows: data } = await db.query(
-        "INSERT INTO merchant (picture, nama, sellingprice, ongkir, customer) VALUES ($1, $2, $3, $4, $5)",
-        [imagefiles, name, selling, ongkir, customer]
+        "INSERT INTO merchant (picture, nama, sellingprice, ongkir) VALUES ($1, $2, $3, $4)",
+        [imagefiles, name, selling, ongkir]
       );
       res.redirect("/barang");
     } catch (err) {
@@ -125,7 +125,7 @@ module.exports = function (db) {
     console.log("masuk edit");
     try {
       const { id } = req.params;
-      const { nama, selling, ongkir, stock } = req.body;
+      const { nama, selling, ongkir } = req.body;
       console.log(req.body);
 
       let sampleFile;
@@ -133,8 +133,8 @@ module.exports = function (db) {
 
       if (!req.files || Object.keys(req.files).length === 0) {
         await db.query(
-          "UPDATE merchant SET nama=$1, sellingprice=$2, ongkir=$3, customer=$4 WHERE id=$5",
-          [nama, selling, ongkir, customer, id]
+          "UPDATE merchant SET nama=$1, sellingprice=$2, ongkir=$3 WHERE id=$4",
+          [nama, selling, ongkir, id]
         );
       } else {
         // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
@@ -151,8 +151,8 @@ module.exports = function (db) {
         sampleFile.mv(uploadPath);
 
         await db.query(
-          "UPDATE merchant SET picture=$1, nama=$2, sellingprice=$3, ongkir=$4, customer=$5 WHERE id=$6",
-          [imagefiles, nama, selling, ongkir, customer, id]
+          "UPDATE merchant SET picture=$1, nama=$2, sellingprice=$3, ongkir=$4 WHERE id=$5",
+          [imagefiles, nama, selling, ongkir, id]
         );
       }
       res.redirect("/barang");

@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 const { creatTokens, validateToken } = require("./JWT");
+const { json } = require("body-parser");
 
 /* GET home page. */
 module.exports = function (db) {
@@ -12,6 +13,7 @@ module.exports = function (db) {
     try {
       const email = req.body.email;
       const password = req.body.password;
+      console.log(email, password);
 
       const { rows: emails } = await db.query(
         "SELECT * FROM users WHERE email = $1",
@@ -19,15 +21,12 @@ module.exports = function (db) {
       );
 
       if (emails.length == 0) {
-        console.log("masuk");
         return res.redirect("/");
       }
 
       if (password != emails[0].password) {
-        console.log("masuk passowrd");
         return res.redirect("/");
       }
-      console.log("masuk2");
 
       const accessToken = creatTokens(emails);
 

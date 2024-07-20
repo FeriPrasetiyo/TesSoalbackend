@@ -1,16 +1,16 @@
 var express = require("express");
 var router = express.Router();
-const { creatTokens, validateToken } = require("./JWT");
+// const { creatTokens, validateToken } = require("./JWT");
 const path = require("path");
 var fs = require("fs");
 
 /* GET users listing. */
 module.exports = function (db) {
-  router.get("/", validateToken, function (req, res, next) {
-    res.render("barang");
+  router.get("/", function (req, res, next) {
+    res.render("beli");
   });
 
-  router.get("/datatable", async (req, res) => {
+  router.get("/costomer", async (req, res) => {
     let params = [];
 
     if (req.query.search.value) {
@@ -27,8 +27,9 @@ module.exports = function (db) {
         params.length > 0 ? ` where ${params.join(" or ")}` : ""
       }`
     );
+
     const data = await db.query(
-      `select * from costomer${
+      `SELECT merchant.*, costomer.* FROM merchant LEFT JOIN costomer ON merchant.supplier = costomer.supplierid${
         params.length > 0 ? ` where ${params.join(" or ")}` : ""
       } order by ${sortBy} ${sortMode} limit ${limit} offset ${offset} `
     );
@@ -46,9 +47,10 @@ module.exports = function (db) {
       const { nama_customer, nama_barang, harga_barang, ongkir } = req.body;
 
       const { rows: data } = await db.query(
-        "INSERT INTO costomer (id_costomer,nama_customer, nama_barang, harga_barang, ongkir) VALUES ($1, $2, $3, $4, $5)",
+        "INSERT INTO costomer (nama_customer, nama_barang, harga_barang, ongkir) VALUES ($1, $2, $3, $4)",
         [id_costomer, nama_customer, nama_barang, harga_barang, ongkir]
       );
+
       res.redirect("/barang");
     } catch (err) {
       console.log(err);
